@@ -1,0 +1,330 @@
+/**
+ * Clase Game: Controla el ciclo principal del juego Ping Pong
+ * Maneja la inicialización, actualización y renderizado del juego
+ */
+class Game {
+    field Ball ball;           // Objeto que representa la pelota
+    field Paddle paddle1;      // Paleta del jugador 1 (izquierda)
+    field Paddle paddle2;      // Paleta del jugador 2 (derecha)
+    field ScoreBoard scoreBoard; // Marcador de puntuación
+    field int score1;          // Puntuación del jugador 1
+    field int score2;          // Puntuación del jugador 2
+    field int gameOver;        // Indica si el juego ha terminado (1 = terminado, 0 = en curso)
+    
+    /**
+     * Constructor: Inicializa un nuevo juego
+     * Crea los objetos ball, paddle1 y paddle2
+     * Inicializa las puntuaciones en 0
+     */
+    constructor Game new() {
+        let ball = Ball.new(256, 128);
+        let paddle1 = Paddle.new(10, 100);
+        let paddle2 = Paddle.new(492, 100);
+        let scoreBoard = ScoreBoard.new();
+        let score1 = 0;
+        let score2 = 0;
+        let gameOver = 0;
+        return this;
+    }
+    
+    /**
+     * Método principal del ciclo del juego
+     * Ejecuta el bucle principal: update -> checkCollision -> draw
+     * Continúa hasta que el juego termine
+     * 
+     * Controles:
+     * - Jugador 1: Teclas Q/A para mover paleta izquierda
+     * - Jugador 2: Teclas P/L para mover paleta derecha
+     */
+    method void run() {
+        var int exit;
+        let exit = 0;
+        while (~(exit > 0)) {
+            // Verificar si el juego ha terminado
+            if (gameOver > 0) {
+                // Si hay un ganador, solo mostrar el mensaje y detener el juego
+                do showWinner(gameOver);
+                return;
+            }
+            
+            do checkCollision();    // Verificar colisiones ANTES de mover (previene salir de límites)
+            do update();           // Mover la pelota
+            do checkCollision();    // Verificar colisiones DESPUÉS de mover (detectar goles)
+            do draw();              // Dibujar
+            do Sys.wait(50);
+        }
+        return;
+    }
+    
+    /**
+     * Actualiza el estado del juego en cada frame
+     * Mueve la pelota y actualiza las paletas según la entrada del usuario
+     */
+    method void update() {
+        var int key;
+        
+        // Leer entrada del teclado múltiples veces para mejorar la detección
+        // Nota: Jack tiene limitaciones técnicas y solo puede leer una tecla a la vez,
+        // pero leer múltiples veces puede mejorar la respuesta en algunos casos
+        
+        // Primera lectura del teclado
+        let key = Keyboard.keyPressed();
+        
+        // Controles jugador 1 (paleta izquierda): Q para arriba, A para abajo
+        if (key = 81) {  // Q
+            do paddle1.moveUp();
+        }
+        if (key = 65) {  // A
+            do paddle1.moveDown();
+        }
+        
+        // Controles jugador 2 (paleta derecha): P para arriba, L para abajo
+        if (key = 80) {  // P
+            do paddle2.moveUp();
+        }
+        if (key = 76) {  // L
+            do paddle2.moveDown();
+        }
+        
+        // Segunda lectura del teclado (para intentar detectar cambios rápidos)
+        // Esto puede ayudar a mejorar la respuesta cuando los jugadores presionan teclas alternadamente
+        let key = Keyboard.keyPressed();
+        
+        // Verificar nuevamente las teclas del jugador 1
+        if (key = 81) {  // Q
+            do paddle1.moveUp();
+        }
+        if (key = 65) {  // A
+            do paddle1.moveDown();
+        }
+        
+        // Verificar nuevamente las teclas del jugador 2
+        if (key = 80) {  // P
+            do paddle2.moveUp();
+        }
+        if (key = 76) {  // L
+            do paddle2.moveDown();
+        }
+        
+        // Tercera lectura del teclado (para máxima responsividad)
+        let key = Keyboard.keyPressed();
+        
+        // Verificar una vez más las teclas del jugador 1
+        if (key = 81) {  // Q
+            do paddle1.moveUp();
+        }
+        if (key = 65) {  // A
+            do paddle1.moveDown();
+        }
+        
+        // Verificar una vez más las teclas del jugador 2
+        if (key = 80) {  // P
+            do paddle2.moveUp();
+        }
+        if (key = 76) {  // L
+            do paddle2.moveDown();
+        }
+        
+        do ball.move();
+        return;
+    }
+    
+    /**
+     * Verifica las colisiones entre la pelota y otros elementos
+     * - Colisiones con las paletas (rebote)
+     * - Colisiones con las paredes superior e inferior (rebote)
+     * - Colisiones con las paredes laterales (punto para el oponente)
+     */
+    method void checkCollision() {
+        var int ballX, ballY, ballDx, ballDy;
+        var int paddle1X, paddle1Y, paddle1Width, paddle1Height;
+        var int paddle2X, paddle2Y, paddle2Width, paddle2Height;
+        var int ballLeft, ballRight, ballTop, ballBottom;
+        var int paddle1Right, paddle1Bottom, paddle2Right, paddle2Bottom;
+        var int collision1X, collision1Y, collision2X, collision2Y;
+        
+        let ballX = ball.getX();
+        let ballY = ball.getY();
+        let ballDx = ball.getDx();
+        
+        let paddle1X = paddle1.getX();
+        let paddle1Y = paddle1.getY();
+        let paddle1Width = paddle1.getWidth();
+        let paddle1Height = paddle1.getHeight();
+        
+        let paddle2X = paddle2.getX();
+        let paddle2Y = paddle2.getY();
+        let paddle2Width = paddle2.getWidth();
+        let paddle2Height = paddle2.getHeight();
+        
+        // Colisión con paredes superior e inferior (rebote vertical)
+        // Verificar colisiones con los bordes de la pantalla
+        // Usar límites más amplios para mejor detección
+        let ballDy = ball.getDy();
+        
+        // Si la pelota está cerca del borde superior y moviéndose hacia arriba
+        if ((ballY < 10) & (ballDy < 0)) {
+            do ball.bounceVertical();
+        }
+        // Si la pelota está cerca del borde inferior y moviéndose hacia abajo
+        if ((ballY > 245) & (ballDy > 0)) {
+            do ball.bounceVertical();
+        }
+        
+        // Calcular límites de la pelota y paletas para detección de colisión
+        let ballLeft = ballX - 3;
+        let ballRight = ballX + 3;
+        let ballTop = ballY - 3;
+        let ballBottom = ballY + 3;
+        let paddle1Right = paddle1X + paddle1Width;
+        let paddle1Bottom = paddle1Y + paddle1Height;
+        let paddle2Right = paddle2X + paddle2Width;
+        let paddle2Bottom = paddle2Y + paddle2Height;
+        
+        // Colisión con paleta 1 (izquierda) - considerar el radio de la pelota (3 píxeles)
+        // Verificar si la pelota está dentro del área de la paleta
+        let collision1X = ~(ballRight < paddle1X) & ~(ballLeft > paddle1Right);
+        let collision1Y = ~(ballBottom < paddle1Y) & ~(ballTop > paddle1Bottom);
+        
+        if (collision1X & collision1Y) {
+            // Solo rebotar si la pelota se está moviendo hacia la paleta (hacia la izquierda)
+            if (ballDx < 0) {
+                do ball.bounceHorizontal();
+                do ball.increaseSpeed();  // Aumentar velocidad al rebotar con paleta
+            }
+        }
+        
+        // Colisión con paleta 2 (derecha) - considerar el radio de la pelota (3 píxeles)
+        let collision2X = ~(ballRight < paddle2X) & ~(ballLeft > paddle2Right);
+        let collision2Y = ~(ballBottom < paddle2Y) & ~(ballTop > paddle2Bottom);
+        
+        if (collision2X & collision2Y) {
+            // Solo rebotar si la pelota se está moviendo hacia la paleta (hacia la derecha)
+            if (ballDx > 0) {
+                do ball.bounceHorizontal();
+                do ball.increaseSpeed();  // Aumentar velocidad al rebotar con paleta
+            }
+        }
+        
+        // Detección de goles (pelota sale por los laterales)
+        // Verificar ANTES de que la pelota salga completamente de la pantalla
+        // Esto previene errores de coordenadas inválidas al dibujar
+        // Si la pelota cruza el borde lateral (x < 0 o x > 511), es un gol
+        if (ballX < 0) {
+            // Gol: pelota salió por el lado izquierdo
+            // El jugador 2 (derecha) anotó, así que la pelota va hacia el jugador 1 (izquierda)
+            let score2 = score2 + 1;
+            do scoreBoard.setScore2(score2);
+            
+            // Verificar si hay ganador (3 goles)
+            if (score2 = 3) {
+                let gameOver = 2;  // Marcar que el jugador 2 ganó
+                return;
+            }
+            
+            do resetBall(-1);  // -1 = dirección hacia la izquierda (hacia el que perdió)
+            return;
+        }
+        if (ballX > 511) {
+            // Gol: pelota salió por el lado derecho
+            // El jugador 1 (izquierda) anotó, así que la pelota va hacia el jugador 2 (derecha)
+            let score1 = score1 + 1;
+            do scoreBoard.setScore1(score1);
+            
+            // Verificar si hay ganador (3 goles)
+            if (score1 = 3) {
+                let gameOver = 1;  // Marcar que el jugador 1 ganó
+                return;
+            }
+            
+            do resetBall(1);  // 1 = dirección hacia la derecha (hacia el que perdió)
+            return;
+        }
+        
+        return;
+    }
+    
+    /**
+     * Dibuja todos los elementos del juego en la pantalla
+     * Limpia la pantalla, dibuja la pelota, las paletas y el marcador
+     */
+    method void draw() {
+        do Screen.setColor(false);
+        do Screen.drawRectangle(0, 0, 511, 255);
+        do ball.draw();
+        do paddle1.draw();
+        do paddle2.draw();
+        // Sincronizar puntuaciones antes de dibujar
+        let score1 = scoreBoard.getScore1();
+        let score2 = scoreBoard.getScore2();
+        do scoreBoard.drawScore();
+        return;
+    }
+    
+    /**
+     * Resetea la pelota al centro después de un gol
+     * @param direction Dirección inicial: 1 = hacia derecha, -1 = hacia izquierda
+     */
+    method void resetBall(int direction) {
+        do ball.reset(256, 128, direction);
+        return;
+    }
+    
+    /**
+     * Muestra el mensaje de ganador en pantalla y detiene el juego
+     * Se llama cuando un jugador llega a 3 goles
+     * @param winner Número del jugador ganador (1 o 2)
+     */
+    method void showWinner(int winner) {
+        var int i;
+        
+        // Limpiar pantalla
+        do Screen.setColor(false);
+        do Screen.drawRectangle(0, 0, 511, 255);
+        
+        // Mostrar mensaje de ganador en el centro de la pantalla
+        // Posicionar cursor en el centro (aproximadamente fila 10, columna 15)
+        do Output.moveCursor(10, 15);
+        
+        // Mostrar "GANADOR: JUGADOR " usando printChar para cada carácter
+        // G = 71, A = 65, N = 78, A = 65, D = 68, O = 79, R = 82
+        // : = 58, espacio = 32
+        // J = 74, U = 85, G = 71, A = 65, D = 68, O = 79, R = 82
+        // espacio = 32
+        
+        // "GANADOR: JUGADOR "
+        do Output.printChar(71);  // G
+        do Output.printChar(65);  // A
+        do Output.printChar(78);  // N
+        do Output.printChar(65);  // A
+        do Output.printChar(68);  // D
+        do Output.printChar(79);  // O
+        do Output.printChar(82);  // R
+        do Output.printChar(58);  // :
+        do Output.printChar(32);  // espacio
+        do Output.printChar(74);  // J
+        do Output.printChar(85);  // U
+        do Output.printChar(71);  // G
+        do Output.printChar(65);  // A
+        do Output.printChar(68);  // D
+        do Output.printChar(79);  // O
+        do Output.printChar(82);  // R
+        do Output.printChar(32);  // espacio
+        
+        // Mostrar número del jugador (1 o 2)
+        if (winner = 1) {
+            do Output.printChar(49);  // 1
+        } else {
+            do Output.printChar(50);  // 2
+        }
+        
+        // Bucle infinito para mantener el mensaje visible
+        // El juego se detiene aquí y solo muestra el mensaje del ganador
+        while (true) {
+            do Sys.wait(100);
+        }
+        
+        return;
+    }
+}
+

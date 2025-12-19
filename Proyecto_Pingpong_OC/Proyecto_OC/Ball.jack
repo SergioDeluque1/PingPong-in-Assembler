@@ -1,0 +1,175 @@
+/**
+ * Clase Ball: Representa la pelota del juego Ping Pong
+ * Maneja la posición, velocidad y rebotes de la pelota
+ */
+class Ball {
+    field int x;        // Posición horizontal de la pelota
+    field int y;        // Posición vertical de la pelota
+    field int dx;       // Velocidad horizontal (delta x)
+    field int dy;       // Velocidad vertical (delta y)
+    
+    /**
+     * Constructor: Crea una nueva pelota en la posición inicial especificada
+     * Inicializa la velocidad en dirección aleatoria
+     * 
+     * @param startX Posición horizontal inicial
+     * @param startY Posición vertical inicial
+     */
+    constructor Ball new(int startX, int startY) {
+        let x = startX;
+        let y = startY;
+        let dx = 2;
+        let dy = 2;
+        return this;
+    }
+    
+    /**
+     * Mueve la pelota según su velocidad actual
+     * Actualiza las coordenadas x e y sumando dx y dy respectivamente
+     */
+    method void move() {
+        let x = x + dx;
+        let y = y + dy;
+        return;
+    }
+    
+    /**
+     * Dibuja la pelota en la pantalla
+     * Renderiza un círculo o cuadrado en la posición (x, y)
+     */
+    method void draw() {
+        var int x1, y1, x2, y2;
+        let x1 = x - 3;
+        let y1 = y - 3;
+        let x2 = x + 3;
+        let y2 = y + 3;
+        
+        // Validar que las coordenadas estén dentro del rango válido (0-511 para X, 0-255 para Y)
+        if (x1 < 0) {
+            let x1 = 0;
+        }
+        if (y1 < 0) {
+            let y1 = 0;
+        }
+        if (x2 > 511) {
+            let x2 = 511;
+        }
+        if (y2 > 255) {
+            let y2 = 255;
+        }
+        
+        // Solo dibujar si las coordenadas son válidas (x2 > x1 y y2 > y1)
+        if ((x2 > x1) & (y2 > y1)) {
+            do Screen.setColor(true);
+            do Screen.drawRectangle(x1, y1, x2, y2);
+        }
+        return;
+    }
+    
+    /**
+     * Hace que la pelota rebote horizontalmente
+     * Invierte la dirección horizontal (dx = -dx)
+     * Se llama cuando la pelota choca con una paleta
+     */
+    method void bounceHorizontal() {
+        let dx = -dx;
+        return;
+    }
+    
+    /**
+     * Hace que la pelota rebote verticalmente
+     * Invierte la dirección vertical (dy = -dy)
+     * Se llama cuando la pelota choca con las paredes superior o inferior
+     */
+    method void bounceVertical() {
+        let dy = -dy;
+        return;
+    }
+    
+    /**
+     * Métodos getter para acceder a los campos de la pelota
+     */
+    method int getX() {
+        return x;
+    }
+    
+    method int getY() {
+        return y;
+    }
+    
+    method int getDx() {
+        return dx;
+    }
+    
+    method int getDy() {
+        return dy;
+    }
+    
+    /**
+     * Resetea la pelota a la posición inicial
+     * @param startX Posición X inicial
+     * @param startY Posición Y inicial
+     * @param direction Dirección horizontal: 1 = derecha, -1 = izquierda
+     */
+    method void reset(int startX, int startY, int direction) {
+        let x = startX;
+        let y = startY;
+        let dx = direction * 2;
+        let dy = 2;
+        return;
+    }
+    
+    /**
+     * Aumenta ligeramente la velocidad horizontal de la pelota
+     * Se llama cuando rebota con una paleta para darle más emoción
+     * Solo aumenta la velocidad horizontal (dx) para que sea más desafiante
+     */
+    method void increaseSpeed() {
+        var int newDx;
+        
+        // Aumentar velocidad horizontal en 1 unidad sin límite
+        // Esto hace que el juego sea cada vez más desafiante y emocionante
+        if (dx > 0) {
+            let newDx = dx + 1;
+        } else {
+            if (dx < 0) {
+                let newDx = dx - 1;
+            } else {
+                let newDx = 2;
+            }
+        }
+        
+        let dx = newDx;
+        // No aumentar velocidad vertical (dy) para mantener el juego balanceado
+        return;
+    }
+    
+    /**
+     * Ajusta la posición de la pelota si está fuera de los límites verticales
+     */
+    method void clampY() {
+        // Asegurar que la pelota nunca salga de los límites verticales
+        // Con margen de seguridad de 5 píxeles desde los bordes
+        if (y < 5) {
+            let y = 5;
+        }
+        if (y > 250) {
+            let y = 250;
+        }
+        return;
+    }
+    
+    /**
+     * Ajusta la posición de la pelota si está fuera de los límites horizontales
+     */
+    method void clampX() {
+        if (x < 3) {
+            let x = 3;
+        }
+        if (x > 508) {
+            let x = 508;
+        }
+        return;
+    }
+}
+

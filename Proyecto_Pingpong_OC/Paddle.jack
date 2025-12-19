@@ -1,0 +1,102 @@
+/**
+ * Clase Paddle: Representa una paleta del juego Ping Pong
+ * Maneja la posición y movimiento de las paletas de los jugadores
+ */
+class Paddle {
+    field int x;        // Posición horizontal de la paleta
+    field int y;        // Posición vertical de la paleta
+    field int width;    // Ancho de la paleta
+    field int height;   // Alto de la paleta
+    
+    /**
+     * Constructor: Crea una nueva paleta en la posición inicial especificada
+     * Inicializa el ancho y alto con valores predeterminados
+     * 
+     * @param startX Posición horizontal inicial
+     * @param startY Posición vertical inicial
+     */
+    constructor Paddle new(int startX, int startY) {
+        let x = startX;
+        let y = startY;
+        let width = 10;
+        let height = 60;
+        return this;
+    }
+    
+    /**
+     * Mueve la paleta hacia arriba
+     * Decrementa la coordenada y
+     * Verifica que no se salga de los límites de la pantalla
+     */
+    method void moveUp() {
+        if (y > 0) {
+            let y = y - 5;
+        }
+        return;
+    }
+    
+    /**
+     * Mueve la paleta hacia abajo
+     * Incrementa la coordenada y
+     * Verifica que no se salga de los límites de la pantalla
+     */
+    method void moveDown() {
+        if ((y + height) < 255) {
+            let y = y + 5;
+        }
+        return;
+    }
+    
+    /**
+     * Dibuja la paleta en la pantalla
+     * Renderiza un rectángulo en la posición (x, y) con dimensiones width x height
+     */
+    method void draw() {
+        var int x1, y1, x2, y2;
+        let x1 = x;
+        let y1 = y;
+        let x2 = x + width;
+        let y2 = y + height;
+        
+        // Validar que las coordenadas estén dentro del rango válido
+        if (x1 < 0) {
+            let x1 = 0;
+        }
+        if (y1 < 0) {
+            let y1 = 0;
+        }
+        if (x2 > 511) {
+            let x2 = 511;
+        }
+        if (y2 > 255) {
+            let y2 = 255;
+        }
+        
+        // Solo dibujar si las coordenadas son válidas
+        if ((x2 > x1) & (y2 > y1)) {
+            do Screen.setColor(true);
+            do Screen.drawRectangle(x1, y1, x2, y2);
+        }
+        return;
+    }
+    
+    /**
+     * Métodos getter para acceder a los campos de la paleta
+     */
+    method int getX() {
+        return x;
+    }
+    
+    method int getY() {
+        return y;
+    }
+    
+    method int getWidth() {
+        return width;
+    }
+    
+    method int getHeight() {
+        return height;
+    }
+}
+

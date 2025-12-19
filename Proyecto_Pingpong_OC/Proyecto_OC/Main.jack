@@ -1,0 +1,18 @@
+/**
+ * Clase principal del juego Ping Pong
+ * Punto de entrada del programa
+ */
+class Main {
+    
+    /**
+     * Método principal que inicia la ejecución del juego
+     * Crea una instancia de Game y ejecuta el ciclo principal
+     */
+    function void main() {
+        var Game game;
+        let game = Game.new();
+        do game.run();
+        return;
+    }
+}
+
