@@ -2,10 +2,6 @@
 
 Proyecto desarrollado para el curso de **Organización de Computadores - S2566-1045**.
 
-## Autores
-
-- **Felipe Giraldo Neiva**
-- **Sergio DeLúquez Gonzalez**
 
 ## Requisitos Previos
 
@@ -88,5 +84,6 @@ Proyecto desarrollado para el curso de **Organización de Computadores - S2566-1
 
 - Basado en el curso Nand2Tetris de Noam Nisan y Shimon Schocken
 - Implementación del juego Ping Pong en lenguaje Jack
+
 
 
